@@ -8,8 +8,8 @@ def main():
     raw_data = extract_data(r'D:\code\my_project_1\data\raw\raw_sales_dataset_100 (1).csv')
     if not raw_data: 
         print("Falied to extract data")
-    for row in raw_data:
-        print(row)
+    clean_data = transform_data(raw_data)
+    
 
 
 if __name__ == '__main__':
