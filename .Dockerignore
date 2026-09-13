@@ -1,4 +1,8 @@
 .venv/
-*.json
-*.txt
-__pychace__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.gitignore
+.vscode/
