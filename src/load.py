@@ -1,10 +1,13 @@
 import csv
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def load_data(data, output_path):
 
     if not data:
-        print("[WARNING] Không có dữ liệu để lưu (data is empty).")
+        logger.warning("Không có dữ liệu để lưu (data is empty).") 
         return False
 
     try:
@@ -19,9 +22,9 @@ def load_data(data, output_path):
             writer.writeheader()
             writer.writerows(data)
 
-        print(f"[SUCCESS] Đã lưu thành công {len(data)} dòng vào: {output_path}")
+        logger.info(f"Đã lưu thành công {len(data)} dòng vào: {output_path}")
         return True
 
     except Exception as e:
-        print(f"[ERROR] Lỗi khi lưu dữ liệu vào {output_path}: {e}")
+        logger.error(f"Lỗi khi lưu dữ liệu vào {output_path}: {e}")
         return False

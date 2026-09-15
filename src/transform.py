@@ -1,6 +1,9 @@
+import logging
 from datetime import datetime 
 from dateutil import parser
 import re 
+
+logger = logging.getLogger(__name__)
 
 invalid_tokens = {'', 'none', 'null', 'nan', 'n/a', 'na', 'unknown', 'undefined', '?'}
 
@@ -189,7 +192,8 @@ def clean_date(raw_date, dayfirst=True):
         dt = parser.parse(date_string, dayfirst=dayfirst, fuzzy=True)
         return dt.strftime('%Y-%m-%d')
 
-    except (parser.ParserError, ValueError, TypeError, OSError, OverflowError): 
+    except (parser.ParserError, ValueError, TypeError, OSError, OverflowError) as e: 
+        logger.debug(f"Không thể parse ngày từ '{raw_date}': {e}")
         return None
 
 def clean_city(val):
@@ -278,9 +282,10 @@ def split_date_time(date_value):
 def transform_data(raw_data):
     
     if not raw_data:
+        logger.warning("Dữ liệu đầu vào rỗng (raw_data is empty).")
         return []
     
-
+    logger.info(f"Bắt đầu làm sạch dữ liệu ({len(raw_data)} bản ghi)...")
     clean_data = []
 
     for row in raw_data:
@@ -336,10 +341,13 @@ def transform_data(raw_data):
         )
         }
         clean_data.append(clean_row)
+    
+    logger.info(f"Hoàn thành làm sạch {len(clean_data)} bản ghi.")
     return clean_data
 
 
 def data_validation(clean_data):
+    logger.info(f"Bắt đầu kiểm tra tính hợp lệ dữ liệu ({len(clean_data)} bản ghi)...")
     error_list = []
 
     for i, row in enumerate(clean_data):
@@ -389,6 +397,11 @@ def data_validation(clean_data):
                 'errors': row_errors
             })
 
+    if error_list:
+        logger.warning(f"Kiểm tra hoàn tất: Phát hiện {len(error_list)}/{len(clean_data)} bản ghi có vấn đề.")
+    else:
+        logger.info(f"Kiểm tra hoàn tất: Tất cả {len(clean_data)} bản ghi đều hợp lệ.")
+
     return error_list
 
 def print_validation_report(clean_data, error_list):
@@ -403,6 +416,11 @@ def print_validation_report(clean_data, error_list):
     total_err = len(error_list)
     total_ok  = total - total_err
     rate      = (total_ok / total * 100) if total else 0
+
+    logger.info(f"Tổng kết validation: {total_ok}/{total} bản ghi đạt ({rate:.1f}%), {total_err} bản ghi có lỗi ({100 - rate:.1f}%).")
+    if error_counts:
+        summary_str = ", ".join([f"{k}: {v}" for k, v in sorted(error_counts.items(), key=lambda x: -x[1])])
+        logger.warning(f"Tổng hợp các loại lỗi: {summary_str}")
 
     sep  = '=' * 55
     sep2 = '-' * 55
